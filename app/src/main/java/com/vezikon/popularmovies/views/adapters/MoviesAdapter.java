@@ -62,12 +62,13 @@ public class MoviesAdapter extends BaseAdapter {
 
         final Movie movie = (Movie) getItem(position);
 
-        String path = "http://image.tmdb.org/t/p/w342";
+        if (movie.getPoster_path() != null) {
+            String path = "http://image.tmdb.org/t/p/w342";
 
-        Picasso.with(context).load(path + movie.getPoster_path())
-                .placeholder(R.drawable.placeholder)
-                .into(holder.movieImageView);
-
+            Picasso.with(context).load(path + movie.getPoster_path())
+                    .placeholder(R.drawable.placeholder)
+                    .into(holder.movieImageView);
+        }
 
         return convertView;
     }

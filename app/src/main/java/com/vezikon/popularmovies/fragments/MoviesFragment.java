@@ -4,6 +4,8 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.res.Configuration;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -18,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
 import com.vezikon.popularmovies.R;
 import com.vezikon.popularmovies.Utils;
 import com.vezikon.popularmovies.models.Movie;
@@ -60,6 +63,10 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
 
     private OnMoviesFragmentListener mListener;
 
+    private static final String KEY_MOVIES = "movies.list";
+
+    private boolean isEmpty = true;
+
     public static MoviesFragment newInstance() {
         MoviesFragment fragment = new MoviesFragment();
 
@@ -77,6 +84,12 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (savedInstanceState != null) {
+            moviesList = savedInstanceState.getParcelableArrayList(KEY_MOVIES);
+
+            //no need to load the data from the internet again
+            isEmpty = false;
+        }
 
         setHasOptionsMenu(true);
     }
@@ -86,6 +99,7 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
         View v = inflater.inflate(R.layout.fragment_movies, container, false);
 
         ButterKnife.inject(this, v);
+
         return v;
     }
 
@@ -93,16 +107,19 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
         adapter = new MoviesAdapter(getActivity(), moviesList);
         mGridView.setAdapter(adapter);
         mGridView.setOnItemClickListener(this);
 
-        //checking network state
-        if (Utils.isNetworkAvailable(getActivity())) {
-            showProgress(true);
-            getMovies(TYPE_MOST_POPULAR);
-        } else {
-            Toast.makeText(getActivity(), getString(R.string.error_msg_no_connection), Toast.LENGTH_LONG).show();
+        if (isEmpty) {
+            //checking network state
+            if (Utils.isNetworkAvailable(getActivity())) {
+                showProgress(true);
+                getMovies(TYPE_MOST_POPULAR);
+            } else {
+                Toast.makeText(getActivity(), getString(R.string.error_msg_no_connection), Toast.LENGTH_LONG).show();
+            }
         }
 
     }
@@ -264,5 +281,12 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
             progressLayout.setVisibility(show ? View.VISIBLE : View.GONE);
             mGridView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelableArrayList(KEY_MOVIES, moviesList);
     }
 }

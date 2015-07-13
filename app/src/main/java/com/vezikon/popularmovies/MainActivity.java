@@ -18,10 +18,12 @@ public class MainActivity extends AppCompatActivity implements OnMoviesFragmentL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Fragment movieFragment = MoviesFragment.newInstance();
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragment, movieFragment)
-                .commit();
+        if (savedInstanceState == null) {
+            Fragment movieFragment = MoviesFragment.newInstance();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment, movieFragment)
+                    .commit();
+        }
     }
 
 
