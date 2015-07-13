@@ -4,6 +4,8 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
@@ -64,6 +66,8 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
     private OnMoviesFragmentListener mListener;
 
     private static final String KEY_MOVIES = "movies.list";
+    private static final String KEY_PREF = "movies.prefs";
+    private static final String KEY_MOVIES_TYPE = "movies.type";
 
     private boolean isEmpty = true;
 
@@ -112,11 +116,22 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
         mGridView.setAdapter(adapter);
         mGridView.setOnItemClickListener(this);
 
-        if (isEmpty) {
+        if (moviesList.isEmpty()) {
+
+
             //checking network state
             if (Utils.isNetworkAvailable(getActivity())) {
+                //showing progress view
                 showProgress(true);
-                getMovies(TYPE_MOST_POPULAR);
+
+                //getting saved type
+                SharedPreferences preferences =
+                        getActivity().getSharedPreferences(KEY_PREF, Context.MODE_PRIVATE);
+                String type = preferences.getString(KEY_MOVIES_TYPE, TYPE_MOST_POPULAR);
+
+                //getting data from the internet
+                getMovies(type);
+
             } else {
                 Toast.makeText(getActivity(), getString(R.string.error_msg_no_connection), Toast.LENGTH_LONG).show();
             }
@@ -190,16 +205,30 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        SharedPreferences preferences = getActivity().getSharedPreferences(KEY_PREF, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
 
         switch (id) {
             case R.id.action_most_popular:
 
                 showProgress(true);
+
+                //saving data
+                editor.putString(KEY_MOVIES_TYPE, TYPE_MOST_POPULAR);
+                editor.commit();
+
                 getMovies(TYPE_MOST_POPULAR);
                 break;
+
             case R.id.action_highest_rate:
 
                 showProgress(true);
+
+                //saving data
+                editor.putString(KEY_MOVIES_TYPE, TYPE_HIGHEST_RATE);
+                editor.commit();
+
                 getMovies(TYPE_HIGHEST_RATE);
                 break;
         }
