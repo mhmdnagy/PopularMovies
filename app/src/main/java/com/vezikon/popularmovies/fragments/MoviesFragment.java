@@ -5,8 +5,10 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,20 +25,31 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.vezikon.popularmovies.MainActivity;
 import com.vezikon.popularmovies.R;
 import com.vezikon.popularmovies.Utils;
+import com.vezikon.popularmovies.data.MoviesContract;
 import com.vezikon.popularmovies.models.Movie;
 import com.vezikon.popularmovies.models.Movies;
 import com.vezikon.popularmovies.rest.RestClient;
 import com.vezikon.popularmovies.views.adapters.MoviesAdapter;
 
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.CursorAdapter;
+
 import java.util.ArrayList;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
+
+import static com.vezikon.popularmovies.data.MoviesContract.*;
 
 /**
  * A fragment representing a list of Items.
@@ -45,7 +58,8 @@ import retrofit.client.Response;
  * Activities containing this fragment MUST implement the {@link OnMoviesFragmentListener}
  * interface.
  */
-public class MoviesFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class MoviesFragment extends Fragment implements AdapterView.OnItemClickListener,
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     //UI
     @InjectView(android.R.id.list)
@@ -56,10 +70,14 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
 
     private ArrayList<Movie> moviesList = new ArrayList<>();
 
-
-    private static final String API_KEY = "a491e06af68296a1fad86c70235e98f9";
+    //constants
+    public static final String API_KEY = "";
     private static final String TYPE_HIGHEST_RATE = "vote_average.desc";
     private static final String TYPE_MOST_POPULAR = "popularity.desc";
+    private static final String TYPE_FAV = "fav";
+    private static final int LOADER_ID = 0;
+    private static final String KEY_LOADER_FLAG = "flag.loader";
+
 
     private MoviesAdapter adapter;
 
@@ -69,7 +87,27 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
     private static final String KEY_PREF = "movies.prefs";
     private static final String KEY_MOVIES_TYPE = "movies.type";
 
-    private boolean isEmpty = true;
+    //flags
+    private boolean loaderFlag = false;
+
+    //projections
+    public static final String[] MOVIE_COLUMNS = {
+            FavMoviesEntry.TABLE_NAME + "." + FavMoviesEntry._ID,
+            FavMoviesEntry.COLUMN_TITLE,
+            FavMoviesEntry.COLUMN_COUNT,
+            FavMoviesEntry.COLUMN_RELEASE_DATE,
+            FavMoviesEntry.COLUMN_VOTE_AVERAGE,
+            FavMoviesEntry.COLUMN_OVERVIEW,
+            FavMoviesEntry.COLUMN_POSTER_PATH,
+    };
+
+    private static final int COL_ID = 0;
+    private static final int COL_TITLE = 1;
+    private static final int COL_COUNT = 2;
+    private static final int COL_RELEASE_DATE = 3;
+    private static final int COL_VOTE_AVERAGE = 4;
+    private static final int COL_OVERVIEW = 5;
+    private static final int COL_POSTER_PATH = 6;
 
     public static MoviesFragment newInstance() {
         MoviesFragment fragment = new MoviesFragment();
@@ -90,10 +128,9 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
 
         if (savedInstanceState != null) {
             moviesList = savedInstanceState.getParcelableArrayList(KEY_MOVIES);
-
-            //no need to load the data from the internet again
-            isEmpty = false;
+            loaderFlag = savedInstanceState.getBoolean(KEY_LOADER_FLAG);
         }
+
 
         setHasOptionsMenu(true);
     }
@@ -118,24 +155,31 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
 
         if (moviesList.isEmpty()) {
 
+            //getting saved type
+            SharedPreferences preferences =
+                    getActivity().getSharedPreferences(KEY_PREF, Context.MODE_PRIVATE);
+            String type = preferences.getString(KEY_MOVIES_TYPE, TYPE_MOST_POPULAR);
 
-            //checking network state
-            if (Utils.isNetworkAvailable(getActivity())) {
-                //showing progress view
-                showProgress(true);
+            if (!type.equalsIgnoreCase(TYPE_FAV)) {
 
-                //getting saved type
-                SharedPreferences preferences =
-                        getActivity().getSharedPreferences(KEY_PREF, Context.MODE_PRIVATE);
-                String type = preferences.getString(KEY_MOVIES_TYPE, TYPE_MOST_POPULAR);
+                //checking network state
+                if (Utils.isNetworkAvailable(getActivity())) {
+                    //showing progress view
+                    showProgress(true);
 
-                //getting data from the internet
-                getMovies(type);
+                    //getting data from the internet
+                    getMovies(type);
+
+                } else {
+                    Toast.makeText(getActivity(), getString(R.string.error_msg_no_connection), Toast.LENGTH_LONG).show();
+                }
 
             } else {
-                Toast.makeText(getActivity(), getString(R.string.error_msg_no_connection), Toast.LENGTH_LONG).show();
+                //start loader to get offline favorites
+                getActivity().getSupportLoaderManager().initLoader(LOADER_ID, null, this);
             }
         }
+
 
     }
 
@@ -156,6 +200,27 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
         mListener = null;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        //getting saved type
+        SharedPreferences preferences =
+                getActivity().getSharedPreferences(KEY_PREF, Context.MODE_PRIVATE);
+        String type = preferences.getString(KEY_MOVIES_TYPE, TYPE_MOST_POPULAR);
+
+        //restart loader to update content provider changes
+        if (type.equalsIgnoreCase(TYPE_FAV) && loaderFlag) {
+            getActivity().getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        loaderFlag = true;
+    }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -172,6 +237,61 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
         ButterKnife.reset(this);
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getActivity()
+                , FavMoviesEntry.CONTENT_URI
+                , MOVIE_COLUMNS
+                , null
+                , null
+                , null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+        if (data.getCount() > 0) {
+            data.moveToFirst();
+
+            moviesList.clear();
+
+            do {
+                Movie movie = new Movie();
+                movie.setId(data.getInt(COL_ID));
+                movie.setTitle(data.getString(COL_TITLE));
+                movie.setOverview(data.getString(COL_OVERVIEW));
+                movie.setPoster_path(data.getString(COL_POSTER_PATH));
+                movie.setVote_average(data.getDouble(COL_VOTE_AVERAGE));
+                movie.setVote_count(data.getInt(COL_COUNT));
+                movie.setRelease_date(data.getString(COL_RELEASE_DATE));
+
+                moviesList.add(movie);
+
+            } while (data.moveToNext());
+
+            //notify the adapter with data changes
+            adapter.notifyDataSetChanged();
+
+
+//            if (getResources().getBoolean(R.bool.isMultiPan)
+//                    && mListener != null
+//                    && moviesList.size() > 0) {
+//
+////                mListener.onMovieSelected(moviesList.get(0));
+//            }
+
+        }
+
+
+    }
+
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        loader.reset();
+    }
+
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -185,6 +305,7 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
     public interface OnMoviesFragmentListener {
         // TODO: Update argument type and name
         public void onMovieSelected(Movie movie);
+
     }
 
 
@@ -216,7 +337,7 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
 
                 //saving data
                 editor.putString(KEY_MOVIES_TYPE, TYPE_MOST_POPULAR);
-                editor.commit();
+                editor.apply();
 
                 getMovies(TYPE_MOST_POPULAR);
                 break;
@@ -227,10 +348,23 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
 
                 //saving data
                 editor.putString(KEY_MOVIES_TYPE, TYPE_HIGHEST_RATE);
-                editor.commit();
+                editor.apply();
 
                 getMovies(TYPE_HIGHEST_RATE);
                 break;
+            case R.id.action_fav_movies:
+                //saving data
+                editor.putString(KEY_MOVIES_TYPE, TYPE_FAV);
+                editor.apply();
+
+
+                if (getActivity().getSupportLoaderManager().getLoader(LOADER_ID) != null) {
+                    //restart loader to update content provider changes
+                    getActivity().getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+
+                } else {
+                    getActivity().getSupportLoaderManager().initLoader(LOADER_ID, null, this);
+                }
         }
 
         return super.onOptionsItemSelected(item);
@@ -263,6 +397,10 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
 
                 //turn off the progress view
                 showProgress(false);
+
+                if (getResources().getBoolean(R.bool.isMultiPan) && mListener != null) {
+                    mListener.onMovieSelected(moviesList.get(0));
+                }
             }
 
             @Override
@@ -317,5 +455,6 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
         super.onSaveInstanceState(outState);
 
         outState.putParcelableArrayList(KEY_MOVIES, moviesList);
+        outState.putBoolean(KEY_LOADER_FLAG, loaderFlag);
     }
 }

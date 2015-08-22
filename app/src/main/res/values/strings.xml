@@ -9,4 +9,9 @@
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="error_msg_no_connection">No Connection</string>
+    <string name="action_favorite_movies">Favorites</string>
+    <string name="movie">Movies</string>
+    <string name="reviews">Reviews</string>
+    <string name="action_fav">Favorite</string>
+    <string name="action_share">Share</string>
 </resources>

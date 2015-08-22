@@ -10,6 +10,7 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 import com.vezikon.popularmovies.R;
+import com.vezikon.popularmovies.fragments.MoviesFragment;
 import com.vezikon.popularmovies.models.Movie;
 
 import java.util.ArrayList;
@@ -24,10 +25,19 @@ public class MoviesAdapter extends BaseAdapter {
 
     Context context;
     ArrayList<Movie> movies;
+    MoviesFragment.OnMoviesFragmentListener mListener;
 
     public MoviesAdapter(Context context, ArrayList<Movie> movies) {
         this.context = context;
         this.movies = movies;
+
+
+        try {
+            mListener = (MoviesFragment.OnMoviesFragmentListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement OnMoviesFragmentListener");
+        }
     }
 
     @Override
@@ -87,4 +97,5 @@ public class MoviesAdapter extends BaseAdapter {
             ButterKnife.inject(this, view);
         }
     }
+
 }
