@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -25,10 +24,8 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.vezikon.popularmovies.MainActivity;
 import com.vezikon.popularmovies.R;
 import com.vezikon.popularmovies.Utils;
-import com.vezikon.popularmovies.data.MoviesContract;
 import com.vezikon.popularmovies.models.Movie;
 import com.vezikon.popularmovies.models.Movies;
 import com.vezikon.popularmovies.rest.RestClient;
@@ -37,11 +34,8 @@ import com.vezikon.popularmovies.views.adapters.MoviesAdapter;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.CursorAdapter;
 
 import java.util.ArrayList;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -71,7 +65,7 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
     private ArrayList<Movie> moviesList = new ArrayList<>();
 
     //constants
-    public static final String API_KEY = "";
+    public static final String API_KEY = "a491e06af68296a1fad86c70235e98f9";
     private static final String TYPE_HIGHEST_RATE = "vote_average.desc";
     private static final String TYPE_MOST_POPULAR = "popularity.desc";
     private static final String TYPE_FAV = "fav";
@@ -398,7 +392,7 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
                 //turn off the progress view
                 showProgress(false);
 
-                if (getResources().getBoolean(R.bool.isMultiPan) && mListener != null) {
+                if (getResources().getBoolean(R.bool.isMultiPane) && mListener != null) {
                     mListener.onMovieSelected(moviesList.get(0));
                 }
             }

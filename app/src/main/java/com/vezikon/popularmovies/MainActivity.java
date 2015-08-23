@@ -1,10 +1,10 @@
 package com.vezikon.popularmovies;
 
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import com.vezikon.popularmovies.data.MoviesContract;
 import com.vezikon.popularmovies.fragments.MovieDetailFragment;
@@ -36,7 +36,8 @@ public class MainActivity extends AppCompatActivity implements OnMoviesFragmentL
         Fragment movieDetailFragment = MovieDetailFragment.newInstance(movie, isFav(movie));
 
         //check screen status
-        if (getResources().getBoolean(R.bool.isMultiPan)) {
+        if (getResources().getBoolean(R.bool.isMultiPane)
+               ) {
 
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_details, movieDetailFragment)

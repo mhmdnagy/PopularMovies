@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <bool name="isMultiPan">false</bool>
+    <bool name="isMultiPane">false</bool>
 </resources>
