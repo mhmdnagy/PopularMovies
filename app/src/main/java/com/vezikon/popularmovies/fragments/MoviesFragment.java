@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -47,8 +48,8 @@ import static com.vezikon.popularmovies.data.MoviesContract.*;
 
 /**
  * A fragment representing a list of Items.
- * <p/>
- * <p/>
+ * <p>
+ * <p>
  * Activities containing this fragment MUST implement the {@link OnMoviesFragmentListener}
  * interface.
  */
@@ -65,7 +66,7 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
     private ArrayList<Movie> moviesList = new ArrayList<>();
 
     //constants
-    public static final String API_KEY = "a491e06af68296a1fad86c70235e98f9";
+    public static final String API_KEY = "";
     private static final String TYPE_HIGHEST_RATE = "vote_average.desc";
     private static final String TYPE_MOST_POPULAR = "popularity.desc";
     private static final String TYPE_FAV = "fav";
@@ -244,10 +245,10 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
+        moviesList.clear();
+
         if (data.getCount() > 0) {
             data.moveToFirst();
-
-            moviesList.clear();
 
             do {
                 Movie movie = new Movie();
@@ -267,12 +268,18 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
             adapter.notifyDataSetChanged();
 
 
-//            if (getResources().getBoolean(R.bool.isMultiPan)
-//                    && mListener != null
-//                    && moviesList.size() > 0) {
-//
-////                mListener.onMovieSelected(moviesList.get(0));
-//            }
+            if (getResources().getBoolean(R.bool.isMultiPane)
+                    && mListener != null
+                    && moviesList.size() > 0) {
+
+                new Handler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mListener.onMovieSelected(moviesList.get(0));
+
+                    }
+                });
+            }
 
         }
 
@@ -291,7 +298,7 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p/>
+     * <p>
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
@@ -355,9 +362,11 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
                 if (getActivity().getSupportLoaderManager().getLoader(LOADER_ID) != null) {
                     //restart loader to update content provider changes
                     getActivity().getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
-
+                    Log.d("restarting", "loader");
                 } else {
                     getActivity().getSupportLoaderManager().initLoader(LOADER_ID, null, this);
+                    Log.d("new", "loader");
+
                 }
         }
 

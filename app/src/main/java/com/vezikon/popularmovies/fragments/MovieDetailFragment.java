@@ -242,7 +242,8 @@ public class MovieDetailFragment extends Fragment {
                 }
             });
 
-            container.addView(imageView);
+            if (container != null)
+                container.addView(imageView);
         }
 
 
@@ -267,7 +268,8 @@ public class MovieDetailFragment extends Fragment {
             author.setText(review.getAuthor());
             content.setText(review.getContent());
 
-            container.addView(view);
+            if (container != null)
+                container.addView(view);
         }
 
 
@@ -285,7 +287,8 @@ public class MovieDetailFragment extends Fragment {
         TextView textView = (TextView) view.findViewById(R.id.title_text);
         textView.setText(title);
 
-        container.addView(view);
+        if (container != null)
+            container.addView(view);
     }
 
     @Override
@@ -303,7 +306,8 @@ public class MovieDetailFragment extends Fragment {
         // Inflate the menu; this adds items to the action bar if it is present.
         getActivity().getMenuInflater().inflate(R.menu.fragment_movie_details_menu, menu);
 
-        MenuItem item = menu.getItem(0);
+        MenuItem item = menu.findItem(R.id.action_fav);
+
 
         item.setChecked(isFav);
         item.setIcon(item.isChecked() ? R.drawable.ic_favorite_white_18dp : R.drawable.ic_favorite_outline_white_18dp);
