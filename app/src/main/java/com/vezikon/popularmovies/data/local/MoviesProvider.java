@@ -1,4 +1,4 @@
-package com.vezikon.popularmovies.data;
+package com.vezikon.popularmovies.data.local;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -7,8 +7,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Log;
-
-import static com.vezikon.popularmovies.data.MoviesContract.*;
 
 /**
  * Created by vezikon on 8/19/15.
@@ -23,9 +21,9 @@ public class MoviesProvider extends ContentProvider {
 
     static {
 
-        final String authority = CONTENT_AUTHORITY;
+        final String authority = MoviesContract.CONTENT_AUTHORITY;
 
-        matcher.addURI(authority, PATH_FAV_MOVIES, FAV_MOVIES);
+        matcher.addURI(authority, MoviesContract.PATH_FAV_MOVIES, FAV_MOVIES);
     }
 
     @Override
@@ -40,7 +38,7 @@ public class MoviesProvider extends ContentProvider {
 
         switch (matcher.match(uri)) {
             case FAV_MOVIES:
-                cursor = moviesDbHelper.getReadableDatabase().query(FavMoviesEntry.TABLE_NAME
+                cursor = moviesDbHelper.getReadableDatabase().query(MoviesContract.FavMoviesEntry.TABLE_NAME
                         , projection
                         , selection
                         , selectionArgs
@@ -57,7 +55,7 @@ public class MoviesProvider extends ContentProvider {
 
         switch (matcher.match(uri)) {
             case FAV_MOVIES:
-                return FavMoviesEntry.CONTENT_TYPE;
+                return MoviesContract.FavMoviesEntry.CONTENT_TYPE;
             default:
                 return null;
         }
@@ -71,9 +69,9 @@ public class MoviesProvider extends ContentProvider {
 
         switch (match) {
             case FAV_MOVIES: {
-                long _id = db.insert(FavMoviesEntry.TABLE_NAME, null, values);
+                long _id = db.insert(MoviesContract.FavMoviesEntry.TABLE_NAME, null, values);
                 if (_id > 0)
-                    returnUri = FavMoviesEntry.buildFavMoviesUri(_id);
+                    returnUri = MoviesContract.FavMoviesEntry.buildFavMoviesUri(_id);
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
@@ -100,7 +98,7 @@ public class MoviesProvider extends ContentProvider {
         switch (match) {
             case FAV_MOVIES:
                 rowsDeleted = db.delete(
-                        FavMoviesEntry.TABLE_NAME, selection, selectionArgs);
+                        MoviesContract.FavMoviesEntry.TABLE_NAME, selection, selectionArgs);
                 break;
 
 
@@ -123,7 +121,7 @@ public class MoviesProvider extends ContentProvider {
 
         switch (match) {
             case FAV_MOVIES:
-                rowsUpdated = db.update(FavMoviesEntry.TABLE_NAME, values, selection,
+                rowsUpdated = db.update(MoviesContract.FavMoviesEntry.TABLE_NAME, values, selection,
                         selectionArgs);
                 break;
 

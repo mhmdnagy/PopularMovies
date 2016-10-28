@@ -1,4 +1,4 @@
-package com.vezikon.popularmovies;
+package com.vezikon.popularmovies.utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

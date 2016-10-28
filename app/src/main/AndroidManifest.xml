@@ -23,7 +23,7 @@
         </activity>
 
         <provider
-            android:name=".data.MoviesProvider"
+            android:name=".data.local.MoviesProvider"
             android:authorities="com.vezikon.popularmovies" />
     </application>
 

@@ -1,4 +1,4 @@
-package com.vezikon.popularmovies.fragments;
+package com.vezikon.popularmovies.movies;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -7,7 +7,6 @@ import android.app.Activity;
 import android.content.Context;
 
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,11 +25,10 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.vezikon.popularmovies.R;
-import com.vezikon.popularmovies.Utils;
-import com.vezikon.popularmovies.models.Movie;
-import com.vezikon.popularmovies.models.Movies;
-import com.vezikon.popularmovies.rest.RestClient;
-import com.vezikon.popularmovies.views.adapters.MoviesAdapter;
+import com.vezikon.popularmovies.utils.Utils;
+import com.vezikon.popularmovies.data.Movie;
+import com.vezikon.popularmovies.data.Movies;
+import com.vezikon.popularmovies.network.RestClient;
 
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -44,7 +42,7 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-import static com.vezikon.popularmovies.data.MoviesContract.*;
+import static com.vezikon.popularmovies.data.local.MoviesContract.*;
 
 /**
  * A fragment representing a list of Items.

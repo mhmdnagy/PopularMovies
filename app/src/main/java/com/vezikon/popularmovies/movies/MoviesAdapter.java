@@ -1,7 +1,6 @@
-package com.vezikon.popularmovies.views.adapters;
+package com.vezikon.popularmovies.movies;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +9,8 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 import com.vezikon.popularmovies.R;
-import com.vezikon.popularmovies.fragments.MoviesFragment;
-import com.vezikon.popularmovies.models.Movie;
+import com.vezikon.popularmovies.movies.MoviesFragment;
+import com.vezikon.popularmovies.data.Movie;
 
 import java.util.ArrayList;
 

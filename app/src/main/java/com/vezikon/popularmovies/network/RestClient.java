@@ -1,4 +1,4 @@
-package com.vezikon.popularmovies.rest;
+package com.vezikon.popularmovies.network;
 
 import com.squareup.okhttp.OkHttpClient;
 

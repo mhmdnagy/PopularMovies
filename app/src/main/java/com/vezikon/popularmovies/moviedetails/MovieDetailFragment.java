@@ -1,14 +1,11 @@
-package com.vezikon.popularmovies.fragments;
+package com.vezikon.popularmovies.moviedetails;
 
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,14 +20,14 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.vezikon.popularmovies.R;
-import com.vezikon.popularmovies.Utils;
-import com.vezikon.popularmovies.data.MoviesContract;
-import com.vezikon.popularmovies.models.Movie;
-import com.vezikon.popularmovies.models.Review;
-import com.vezikon.popularmovies.models.Reviews;
-import com.vezikon.popularmovies.models.Trailer;
-import com.vezikon.popularmovies.models.Trailers;
-import com.vezikon.popularmovies.rest.RestClient;
+import com.vezikon.popularmovies.utils.Utils;
+import com.vezikon.popularmovies.data.Movie;
+import com.vezikon.popularmovies.data.Review;
+import com.vezikon.popularmovies.data.Reviews;
+import com.vezikon.popularmovies.data.Trailer;
+import com.vezikon.popularmovies.data.Trailers;
+import com.vezikon.popularmovies.movies.MoviesFragment;
+import com.vezikon.popularmovies.network.RestClient;
 
 import java.util.ArrayList;
 
@@ -41,7 +38,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 import static android.widget.LinearLayout.*;
-import static com.vezikon.popularmovies.data.MoviesContract.*;
+import static com.vezikon.popularmovies.data.local.MoviesContract.*;
 
 /**
  * A simple {@link Fragment} subclass.

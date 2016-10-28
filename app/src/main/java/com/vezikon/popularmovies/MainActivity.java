@@ -1,17 +1,16 @@
 package com.vezikon.popularmovies;
 
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
-import com.vezikon.popularmovies.data.MoviesContract;
-import com.vezikon.popularmovies.fragments.MovieDetailFragment;
-import com.vezikon.popularmovies.fragments.MoviesFragment;
-import com.vezikon.popularmovies.models.Movie;
+import com.vezikon.popularmovies.data.local.MoviesContract;
+import com.vezikon.popularmovies.moviedetails.MovieDetailFragment;
+import com.vezikon.popularmovies.movies.MoviesFragment;
+import com.vezikon.popularmovies.data.Movie;
 
-import static com.vezikon.popularmovies.fragments.MoviesFragment.*;
+import static com.vezikon.popularmovies.movies.MoviesFragment.*;
 
 
 public class MainActivity extends AppCompatActivity implements OnMoviesFragmentListener {

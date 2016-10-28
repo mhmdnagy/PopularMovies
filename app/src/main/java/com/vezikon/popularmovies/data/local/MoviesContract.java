@@ -1,4 +1,4 @@
-package com.vezikon.popularmovies.data;
+package com.vezikon.popularmovies.data.local;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;

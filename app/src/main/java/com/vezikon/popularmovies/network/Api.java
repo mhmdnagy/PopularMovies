@@ -1,13 +1,12 @@
-package com.vezikon.popularmovies.rest;
+package com.vezikon.popularmovies.network;
 
 
-import com.vezikon.popularmovies.models.Movies;
-import com.vezikon.popularmovies.models.Reviews;
-import com.vezikon.popularmovies.models.Trailers;
+import com.vezikon.popularmovies.data.Movies;
+import com.vezikon.popularmovies.data.Reviews;
+import com.vezikon.popularmovies.data.Trailers;
 
 import retrofit.Callback;
 
-import retrofit.client.Response;
 import retrofit.http.GET;
 import retrofit.http.Path;
 import retrofit.http.Query;

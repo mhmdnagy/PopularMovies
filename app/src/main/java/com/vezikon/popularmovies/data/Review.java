@@ -1,4 +1,4 @@
-package com.vezikon.popularmovies.models;
+package com.vezikon.popularmovies.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;

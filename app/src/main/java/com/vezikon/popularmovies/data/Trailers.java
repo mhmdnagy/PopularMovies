@@ -1,4 +1,4 @@
-package com.vezikon.popularmovies.models;
+package com.vezikon.popularmovies.data;
 
 import java.util.ArrayList;
 
