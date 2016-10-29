@@ -1,4 +1,4 @@
-package com.vezikon.popularmovies.data.local;
+package com.vezikon.popularmovies.data.source.local;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -38,6 +38,17 @@ public class MoviesContract {
         public static final String COLUMN_COUNT = "vote_count";
         public static final String COLUMN_OVERVIEW = "overview";
         public static final String COLUMN_POSTER_PATH = "poster_path";
+
+        //projections
+        public static final String[] MOVIE_COLUMNS = {
+                FavMoviesEntry.TABLE_NAME + "." + FavMoviesEntry._ID,
+                FavMoviesEntry.COLUMN_TITLE,
+                FavMoviesEntry.COLUMN_COUNT,
+                FavMoviesEntry.COLUMN_RELEASE_DATE,
+                FavMoviesEntry.COLUMN_VOTE_AVERAGE,
+                FavMoviesEntry.COLUMN_OVERVIEW,
+                FavMoviesEntry.COLUMN_POSTER_PATH,
+        };
 
 
         public static Uri buildFavMoviesUri(long id) {
