@@ -19,6 +19,7 @@ public interface MoviesContract {
 
         boolean isEmpty();
 
+        Movie selectMovie(int index);
     }
 
     interface View extends BaseView<Presenter> {
@@ -27,6 +28,5 @@ public interface MoviesContract {
 
         void showMovies(ArrayList<Movie> movies);
 
-        void selectMovie(int index);
     }
 }

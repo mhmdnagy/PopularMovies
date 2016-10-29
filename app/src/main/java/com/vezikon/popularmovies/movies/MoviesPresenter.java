@@ -94,6 +94,7 @@ public class MoviesPresenter implements MoviesContract.Presenter, LoaderManager.
 
                     @Override
                     public void onNext(Movies movies) {
+                        moviesRepository.setMovies((ArrayList<Movie>) movies.getResults());
                         movieView.showMovies((ArrayList<Movie>) movies.getResults());
                     }
                 });
@@ -103,12 +104,25 @@ public class MoviesPresenter implements MoviesContract.Presenter, LoaderManager.
 
     @Override
     public void showFavMovies() {
-        loaderManager.initLoader(MOVIES_LOADER, null, this);
+
+        if (loaderManager.getLoader(MOVIES_LOADER) != null) {
+            //restart loader to update content provider changes
+            loaderManager.restartLoader(MOVIES_LOADER, null, this);
+            Log.d(TAG, "restarting loader");
+        } else {
+            loaderManager.initLoader(MOVIES_LOADER, null, this);
+            Log.d(TAG, "init loader");
+        }
     }
 
     @Override
     public boolean isEmpty() {
         return moviesRepository.getMovies().isEmpty();
+    }
+
+    @Override
+    public Movie selectMovie(int index) {
+        return moviesRepository.getMovies().get(index);
     }
 
     @Override
@@ -156,22 +170,6 @@ public class MoviesPresenter implements MoviesContract.Presenter, LoaderManager.
             } while (data.moveToNext());
 
             movieView.showMovies(moviesList);
-//            //notify the adapter with data changes
-//            adapter.notifyDataSetChanged();
-
-
-//            if (getResources().getBoolean(R.bool.isMultiPane)
-//                    && mListener != null
-//                    && moviesList.size() > 0) {
-//
-//                new Handler().post(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        mListener.onMovieSelected(moviesList.get(0));
-//
-//                    }
-//                });
-//            }
 
         }
     }
