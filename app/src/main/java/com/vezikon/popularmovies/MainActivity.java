@@ -5,27 +5,46 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
-import com.vezikon.popularmovies.data.local.MoviesContract;
+import com.vezikon.popularmovies.data.source.LoaderProvider;
+import com.vezikon.popularmovies.data.source.MoviesRepository;
+import com.vezikon.popularmovies.data.source.local.MoviesContract;
+import com.vezikon.popularmovies.data.source.local.MoviesLocalDataSource;
+import com.vezikon.popularmovies.data.source.remote.MoviesRemoteDataSource;
 import com.vezikon.popularmovies.moviedetails.MovieDetailFragment;
 import com.vezikon.popularmovies.movies.MoviesFragment;
 import com.vezikon.popularmovies.data.Movie;
+import com.vezikon.popularmovies.movies.MoviesPresenter;
+import com.vezikon.popularmovies.utils.ActivityUtil;
+import com.vezikon.popularmovies.utils.schedulers.SchedulerProvider;
 
 import static com.vezikon.popularmovies.movies.MoviesFragment.*;
 
 
 public class MainActivity extends AppCompatActivity implements OnMoviesFragmentListener {
 
+    MoviesPresenter moviesPresenter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (savedInstanceState == null) {
-            Fragment movieFragment = MoviesFragment.newInstance();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment, movieFragment)
-                    .commit();
+        MoviesFragment movieFragment = (MoviesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+
+        if (movieFragment == null) {
+            movieFragment = MoviesFragment.newInstance();
+            ActivityUtil.addFragmentToActivity(getSupportFragmentManager(), movieFragment, R.id.fragment);
         }
+
+        LoaderProvider loaderProvider = new LoaderProvider(this);
+
+        moviesPresenter = new MoviesPresenter(MoviesRepository.getInstance(MoviesLocalDataSource.getInstance(getContentResolver()),
+                MoviesRemoteDataSource.getInstance()),
+                loaderProvider,
+                getSupportLoaderManager(),
+                SchedulerProvider.getInstance(),
+                movieFragment
+        );
     }
 
 
@@ -36,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements OnMoviesFragmentL
 
         //check screen status
         if (getResources().getBoolean(R.bool.isMultiPane)
-               ) {
+                ) {
 
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_details, movieDetailFragment)
@@ -64,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements OnMoviesFragmentL
         String[] selectionArgs = {String.valueOf(movie.getId())};
 
         Cursor cursor = getContentResolver().query(MoviesContract.FavMoviesEntry.CONTENT_URI,
-                MoviesFragment.MOVIE_COLUMNS,
+                MoviesContract.FavMoviesEntry.MOVIE_COLUMNS,
                 selection,
                 selectionArgs,
                 null

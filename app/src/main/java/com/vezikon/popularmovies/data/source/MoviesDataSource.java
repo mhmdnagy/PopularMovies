@@ -5,6 +5,8 @@ import com.vezikon.popularmovies.data.Movies;
 import com.vezikon.popularmovies.data.Reviews;
 import com.vezikon.popularmovies.data.Trailers;
 
+import java.util.ArrayList;
+
 import rx.Observable;
 
 /**
@@ -24,5 +26,9 @@ public interface MoviesDataSource {
     void addToFav(Movie movie);
 
     void removeFromFav(Movie movie);
+
+    void setMovies(ArrayList<Movie> movies);
+
+    ArrayList<Movie> getMovies();
 
 }

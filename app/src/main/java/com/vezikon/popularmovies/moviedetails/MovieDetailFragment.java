@@ -33,12 +33,10 @@ import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+
 
 import static android.widget.LinearLayout.*;
-import static com.vezikon.popularmovies.data.local.MoviesContract.*;
+import static com.vezikon.popularmovies.data.source.local.MoviesContract.*;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -163,49 +161,49 @@ public class MovieDetailFragment extends Fragment {
     }
 
     private void getTrailers(final int movieId) {
-        RestClient.get().trailers(movieId + "", MoviesFragment.API_KEY, new Callback<Trailers>() {
-            @Override
-            public void success(Trailers response, Response response2) {
-                if (response.getYoutube().size() > 0) {
-
-                    trailersList = response.getYoutube();
-
-                    //add section title
-                    addTitle(getString(R.string.movie));
-                    //add content
-                    addTrailers(response.getYoutube());
-                }
-
-                //getting reviews
-                getReviews(movie.getId());
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Log.e(TAG, error.toString());
-
-                //getting reviews
-                getReviews(movie.getId());
-            }
-        });
+//        RestClient.get().trailers(movieId + "", MoviesFragment.API_KEY, new Callback<Trailers>() {
+//            @Override
+//            public void success(Trailers response, Response response2) {
+//                if (response.getYoutube().size() > 0) {
+//
+//                    trailersList = response.getYoutube();
+//
+//                    //add section title
+//                    addTitle(getString(R.string.movie));
+//                    //add content
+//                    addTrailers(response.getYoutube());
+//                }
+//
+//                //getting reviews
+//                getReviews(movie.getId());
+//            }
+//
+//            @Override
+//            public void failure(RetrofitError error) {
+//                Log.e(TAG, error.toString());
+//
+//                //getting reviews
+//                getReviews(movie.getId());
+//            }
+//        });
     }
 
 
     private void getReviews(int movieId) {
-        RestClient.get().reviews(movieId + "", MoviesFragment.API_KEY, new Callback<Reviews>() {
-            @Override
-            public void success(Reviews reviews, Response response) {
-                if (reviews.getResults().size() > 0) {
-                    addTitle(getString(R.string.reviews));
-                    addReview(reviews.getResults());
-                }
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Log.e(TAG, error.toString());
-            }
-        });
+//        RestClient.get().reviews(movieId + "", MoviesFragment.API_KEY, new Callback<Reviews>() {
+//            @Override
+//            public void success(Reviews reviews, Response response) {
+//                if (reviews.getResults().size() > 0) {
+//                    addTitle(getString(R.string.reviews));
+//                    addReview(reviews.getResults());
+//                }
+//            }
+//
+//            @Override
+//            public void failure(RetrofitError error) {
+//                Log.e(TAG, error.toString());
+//            }
+//        });
     }
 
     /**

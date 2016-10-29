@@ -11,6 +11,8 @@ import com.vezikon.popularmovies.data.Reviews;
 import com.vezikon.popularmovies.data.Trailers;
 import com.vezikon.popularmovies.data.source.MoviesDataSource;
 
+import java.util.ArrayList;
+
 import rx.Observable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -18,7 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Created by vezikon on 10/29/16.
  */
-public class MoviesLocalDataSource implements MoviesDataSource{
+public class MoviesLocalDataSource implements MoviesDataSource {
 
     private static MoviesLocalDataSource INSTANCE;
 
@@ -32,7 +34,7 @@ public class MoviesLocalDataSource implements MoviesDataSource{
     }
 
     private MoviesLocalDataSource(@NonNull ContentResolver contentResolver) {
-        contentResolver = checkNotNull(contentResolver, "ContentResolver cannot be null");
+        this.contentResolver = checkNotNull(contentResolver, "ContentResolver cannot be null");
     }
 
     @Override
@@ -56,6 +58,17 @@ public class MoviesLocalDataSource implements MoviesDataSource{
         String[] selectionArgs = {movie.getId() + ""};
 
         contentResolver.delete(MoviesContract.FavMoviesEntry.CONTENT_URI, selection, selectionArgs);
+    }
+
+    @Override
+    public void setMovies(ArrayList<Movie> movies) {
+        // no-op since the data is loader via Cursor Loader
+    }
+
+    @Override
+    public ArrayList<Movie> getMovies() {
+        // no-op since the data is loader via Cursor Loader
+        return null;
     }
 
     @Override

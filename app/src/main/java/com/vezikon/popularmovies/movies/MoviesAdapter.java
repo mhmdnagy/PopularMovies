@@ -13,6 +13,7 @@ import com.vezikon.popularmovies.movies.MoviesFragment;
 import com.vezikon.popularmovies.data.Movie;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -80,6 +81,11 @@ public class MoviesAdapter extends BaseAdapter {
         }
 
         return convertView;
+    }
+
+    public void replaceData(ArrayList<Movie> movies){
+        this.movies = movies;
+        notifyDataSetChanged();
     }
 
     /**

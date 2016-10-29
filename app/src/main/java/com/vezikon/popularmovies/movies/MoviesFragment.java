@@ -7,12 +7,9 @@ import android.app.Activity;
 import android.content.Context;
 
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,22 +24,13 @@ import android.widget.Toast;
 import com.vezikon.popularmovies.R;
 import com.vezikon.popularmovies.utils.Utils;
 import com.vezikon.popularmovies.data.Movie;
-import com.vezikon.popularmovies.data.Movies;
-import com.vezikon.popularmovies.network.RestClient;
 
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 
 import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 
-import static com.vezikon.popularmovies.data.local.MoviesContract.*;
 
 /**
  * A fragment representing a list of Items.
@@ -52,7 +40,7 @@ import static com.vezikon.popularmovies.data.local.MoviesContract.*;
  * interface.
  */
 public class MoviesFragment extends Fragment implements AdapterView.OnItemClickListener,
-        LoaderManager.LoaderCallbacks<Cursor> {
+        MoviesContract.View{
 
     //UI
     @InjectView(android.R.id.list)
@@ -64,11 +52,9 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
     private ArrayList<Movie> moviesList = new ArrayList<>();
 
     //constants
-    public static final String API_KEY = "";
     private static final String TYPE_HIGHEST_RATE = "vote_average.desc";
     private static final String TYPE_MOST_POPULAR = "popularity.desc";
     private static final String TYPE_FAV = "fav";
-    private static final int LOADER_ID = 0;
     private static final String KEY_LOADER_FLAG = "flag.loader";
 
 
@@ -83,24 +69,8 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
     //flags
     private boolean loaderFlag = false;
 
-    //projections
-    public static final String[] MOVIE_COLUMNS = {
-            FavMoviesEntry.TABLE_NAME + "." + FavMoviesEntry._ID,
-            FavMoviesEntry.COLUMN_TITLE,
-            FavMoviesEntry.COLUMN_COUNT,
-            FavMoviesEntry.COLUMN_RELEASE_DATE,
-            FavMoviesEntry.COLUMN_VOTE_AVERAGE,
-            FavMoviesEntry.COLUMN_OVERVIEW,
-            FavMoviesEntry.COLUMN_POSTER_PATH,
-    };
+    private MoviesContract.Presenter presenter;
 
-    private static final int COL_ID = 0;
-    private static final int COL_TITLE = 1;
-    private static final int COL_COUNT = 2;
-    private static final int COL_RELEASE_DATE = 3;
-    private static final int COL_VOTE_AVERAGE = 4;
-    private static final int COL_OVERVIEW = 5;
-    private static final int COL_POSTER_PATH = 6;
 
     public static MoviesFragment newInstance() {
         MoviesFragment fragment = new MoviesFragment();
@@ -142,11 +112,11 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
         super.onViewCreated(view, savedInstanceState);
 
 
-        adapter = new MoviesAdapter(getActivity(), moviesList);
+        adapter = new MoviesAdapter(getActivity(), new ArrayList<Movie>());
         mGridView.setAdapter(adapter);
         mGridView.setOnItemClickListener(this);
 
-        if (moviesList.isEmpty()) {
+        if (presenter.isEmpty()) {
 
             //getting saved type
             SharedPreferences preferences =
@@ -157,11 +127,9 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
 
                 //checking network state
                 if (Utils.isNetworkAvailable(getActivity())) {
-                    //showing progress view
-                    showProgress(true);
 
                     //getting data from the internet
-                    getMovies(type);
+                    presenter.getMovies(type);
 
                 } else {
                     Toast.makeText(getActivity(), getString(R.string.error_msg_no_connection), Toast.LENGTH_LONG).show();
@@ -169,7 +137,8 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
 
             } else {
                 //start loader to get offline favorites
-                getActivity().getSupportLoaderManager().initLoader(LOADER_ID, null, this);
+//                getActivity().getSupportLoaderManager().initLoader(LOADER_ID, null, this);
+                presenter.showFavMovies();
             }
         }
 
@@ -204,7 +173,7 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
 
         //restart loader to update content provider changes
         if (type.equalsIgnoreCase(TYPE_FAV) && loaderFlag) {
-            getActivity().getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+//            getActivity().getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
         }
     }
 
@@ -231,63 +200,8 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity()
-                , FavMoviesEntry.CONTENT_URI
-                , MOVIE_COLUMNS
-                , null
-                , null
-                , null);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
-        moviesList.clear();
-
-        if (data.getCount() > 0) {
-            data.moveToFirst();
-
-            do {
-                Movie movie = new Movie();
-                movie.setId(data.getInt(COL_ID));
-                movie.setTitle(data.getString(COL_TITLE));
-                movie.setOverview(data.getString(COL_OVERVIEW));
-                movie.setPoster_path(data.getString(COL_POSTER_PATH));
-                movie.setVote_average(data.getDouble(COL_VOTE_AVERAGE));
-                movie.setVote_count(data.getInt(COL_COUNT));
-                movie.setRelease_date(data.getString(COL_RELEASE_DATE));
-
-                moviesList.add(movie);
-
-            } while (data.moveToNext());
-
-            //notify the adapter with data changes
-            adapter.notifyDataSetChanged();
-
-
-            if (getResources().getBoolean(R.bool.isMultiPane)
-                    && mListener != null
-                    && moviesList.size() > 0) {
-
-                new Handler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mListener.onMovieSelected(moviesList.get(0));
-
-                    }
-                });
-            }
-
-        }
-
-
-    }
-
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        loader.reset();
+    public void setPresenter(MoviesContract.Presenter presenter) {
+        this.presenter = presenter;
     }
 
 
@@ -338,7 +252,7 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
                 editor.putString(KEY_MOVIES_TYPE, TYPE_MOST_POPULAR);
                 editor.apply();
 
-                getMovies(TYPE_MOST_POPULAR);
+                presenter.getMovies(TYPE_MOST_POPULAR);
                 break;
 
             case R.id.action_highest_rate:
@@ -349,71 +263,27 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
                 editor.putString(KEY_MOVIES_TYPE, TYPE_HIGHEST_RATE);
                 editor.apply();
 
-                getMovies(TYPE_HIGHEST_RATE);
+                presenter.getMovies(TYPE_HIGHEST_RATE);
                 break;
             case R.id.action_fav_movies:
                 //saving data
                 editor.putString(KEY_MOVIES_TYPE, TYPE_FAV);
                 editor.apply();
 
-
-                if (getActivity().getSupportLoaderManager().getLoader(LOADER_ID) != null) {
-                    //restart loader to update content provider changes
-                    getActivity().getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
-                    Log.d("restarting", "loader");
-                } else {
-                    getActivity().getSupportLoaderManager().initLoader(LOADER_ID, null, this);
-                    Log.d("new", "loader");
-
-                }
+//
+//                if (getActivity().getSupportLoaderManager().getLoader(LOADER_ID) != null) {
+//                    //restart loader to update content provider changes
+//                    getActivity().getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+//                    Log.d("restarting", "loader");
+//                } else {
+//                    getActivity().getSupportLoaderManager().initLoader(LOADER_ID, null, this);
+//                    Log.d("new", "loader");
+//
+//                }
         }
 
         return super.onOptionsItemSelected(item);
     }
-
-    /**
-     * this method is responsible for getting movies list from the backend
-     *
-     * @param sortOptions sorting option whether sorting by most popular or highest rate
-     */
-    private void getMovies(String sortOptions) {
-
-        RestClient.get().movies(sortOptions, API_KEY, new Callback<Movies>() {
-            @Override
-            public void success(Movies movies, Response response) {
-
-                Log.d("movies size", movies.getResults().size() + "");
-
-                if (moviesList.isEmpty()) {
-                    moviesList.addAll(movies.getResults());
-                } else {
-                    //clear the current movies list before adding the new data
-                    moviesList.clear();
-                    moviesList.addAll(movies.getResults());
-                }
-
-
-                //notify the adapter with data changes
-                adapter.notifyDataSetChanged();
-
-                //turn off the progress view
-                showProgress(false);
-
-                if (getResources().getBoolean(R.bool.isMultiPane) && mListener != null) {
-                    mListener.onMovieSelected(moviesList.get(0));
-                }
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Toast.makeText(getActivity(),
-                        getString(R.string.error_msg_failed_to_load), Toast.LENGTH_SHORT).show();
-
-                showProgress(false);
-            }
-        });
-    }
-
 
     /**
      * Shows the progress UI and hides the login form.
@@ -449,6 +319,16 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
             progressLayout.setVisibility(show ? View.VISIBLE : View.GONE);
             mGridView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
+    }
+
+    @Override
+    public void showMovies(ArrayList<Movie> movies) {
+        adapter.replaceData(movies);
+    }
+
+    @Override
+    public void selectMovie(int index) {
+
     }
 
     @Override

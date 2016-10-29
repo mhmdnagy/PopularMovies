@@ -9,6 +9,8 @@ import com.vezikon.popularmovies.data.Trailers;
 import com.vezikon.popularmovies.data.source.local.MoviesLocalDataSource;
 import com.vezikon.popularmovies.data.source.remote.MoviesRemoteDataSource;
 
+import java.util.ArrayList;
+
 import rx.Observable;
 
 /**
@@ -65,5 +67,15 @@ public class MoviesRepository implements MoviesDataSource {
     @Override
     public void removeFromFav(Movie movie) {
         moviesLocalDataSource.removeFromFav(movie);
+    }
+
+    @Override
+    public void setMovies(ArrayList<Movie> movies) {
+        moviesRemoteDataSource.setMovies(movies);
+    }
+
+    @Override
+    public ArrayList<Movie> getMovies() {
+        return moviesRemoteDataSource.getMovies();
     }
 }

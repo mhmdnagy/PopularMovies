@@ -8,6 +8,8 @@ import com.vezikon.popularmovies.data.source.MoviesDataSource;
 import com.vezikon.popularmovies.network.RestClient;
 import com.vezikon.popularmovies.utils.ApiKey;
 
+import java.util.ArrayList;
+
 import rx.Observable;
 
 /**
@@ -16,6 +18,8 @@ import rx.Observable;
 public class MoviesRemoteDataSource implements MoviesDataSource {
 
     private static MoviesRemoteDataSource INSTANCE;
+
+    private ArrayList<Movie> movies;
 
     public static MoviesRemoteDataSource getInstance() {
         if (INSTANCE == null)
@@ -26,6 +30,11 @@ public class MoviesRemoteDataSource implements MoviesDataSource {
     private MoviesRemoteDataSource() {
     }
 
+    /**
+     * this method is responsible for getting movies list from the backend
+     *
+     * @param sortBy sorting option whether sorting by most popular or highest rate
+     */
     @Override
     public Observable<Movies> getMovies(String sortBy) {
         return RestClient.get().movies(sortBy, ApiKey.getApiKey());
@@ -54,5 +63,15 @@ public class MoviesRemoteDataSource implements MoviesDataSource {
     @Override
     public void removeFromFav(Movie movie) {
 
+    }
+
+    @Override
+    public ArrayList<Movie> getMovies() {
+        return movies;
+    }
+
+    @Override
+    public void setMovies(ArrayList<Movie> movies) {
+        this.movies = movies;
     }
 }
