@@ -1,9 +1,16 @@
 package com.vezikon.popularmovies.network;
 
-import com.squareup.okhttp.OkHttpClient;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import retrofit.RestAdapter;
-import retrofit.client.OkClient;
+
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+
 
 /**
  * Created by vezikon on 1/28/15.
@@ -26,14 +33,25 @@ public class RestClient {
     }
 
     private static void setupRestClient() {
-        RestAdapter.Builder builder = new RestAdapter.Builder()
-                .setEndpoint(ROOT)
-                .setClient(new OkClient(new OkHttpClient()));
-//                .setLogLevel(RestAdapter.LogLevel.FULL);
+        Gson gson = new GsonBuilder().create();
 
-        RestAdapter restAdapter = builder.build();
-        API = restAdapter.create(Api.class);
+        HttpLoggingInterceptor.Level logLevel = HttpLoggingInterceptor.Level.BODY;
+        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+        interceptor.setLevel(logLevel);
 
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(interceptor)
+                .build();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .baseUrl(ROOT)
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+
+
+        API = retrofit.create(Api.class);
 
     }
 }
