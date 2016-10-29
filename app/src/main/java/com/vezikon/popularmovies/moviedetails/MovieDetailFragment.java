@@ -39,7 +39,6 @@ import static android.widget.LinearLayout.*;
  */
 public class MovieDetailFragment extends Fragment implements MovieContract.View {
 
-    private static final String ARG_MOVIE = "movie";
     private static final String ARG_IS_FAV = "is.fav";
 
     @InjectView(R.id.movie_detail_title)
@@ -59,7 +58,6 @@ public class MovieDetailFragment extends Fragment implements MovieContract.View 
 
     private boolean isFav;
 
-    private static final String KEY_MOVIE = "movie";
     private static final String KEY_IS_FAV = "is.fav";
 
     private final String TAG = this.getClass().getName();
@@ -71,13 +69,12 @@ public class MovieDetailFragment extends Fragment implements MovieContract.View 
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param movie movie instance.
+     * @param isFav is {@link Movie} is fav or not.
      * @return A new instance of fragment MovieDetailFragment.
      */
-    public static MovieDetailFragment newInstance(Movie movie, boolean isFav) {
+    public static MovieDetailFragment newInstance(boolean isFav) {
         MovieDetailFragment fragment = new MovieDetailFragment();
         Bundle args = new Bundle();
-        args.putParcelable(ARG_MOVIE, movie);
         args.putBoolean(ARG_IS_FAV, isFav);
         fragment.setArguments(args);
         return fragment;

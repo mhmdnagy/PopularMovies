@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements OnMoviesFragmentL
 
     private void addMultiPaneMovieDetailFragment(Movie movie) {
         MovieDetailFragment movieDetailFragment =
-                MovieDetailFragment.newInstance(movie, isFav(movie));
+                MovieDetailFragment.newInstance(isFav(movie));
         ActivityUtil
                 .addFragmentToActivity(getSupportFragmentManager(), movieDetailFragment, R.id.fragment_details);
 
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements OnMoviesFragmentL
 
     private void addStandaloneMovieDetailFragment(Movie movie) {
         MovieDetailFragment movieDetailFragment =
-                MovieDetailFragment.newInstance(movie, isFav(movie));
+                MovieDetailFragment.newInstance(isFav(movie));
         ActivityUtil
                 .addFragmentToActivity(getSupportFragmentManager(), movieDetailFragment, R.id.fragment);
 
