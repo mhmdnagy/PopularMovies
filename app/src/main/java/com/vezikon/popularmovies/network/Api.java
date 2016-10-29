@@ -15,12 +15,12 @@ import rx.Observable;
  */
 public interface Api {
 
-    @GET("/discover/movie")
+    @GET("/3/discover/movie")
     Observable<Movies> movies(@Query("sort_by") String sortBy, @Query("api_key") String apiKey);
 
-    @GET("/movie/{id}/trailers")
+    @GET("/3/movie/{id}/trailers")
     Observable<Trailers> trailers(@Path("id") String id, @Query("api_key") String apiKey);
 
-    @GET("/movie/{id}/reviews")
+    @GET("/3/movie/{id}/reviews")
     Observable<Reviews> reviews(@Path("id") String id, @Query("api_key") String apiKey);
 }

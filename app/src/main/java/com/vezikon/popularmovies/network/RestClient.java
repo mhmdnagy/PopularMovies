@@ -17,7 +17,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class RestClient {
 
-    private static String ROOT = "http://api.themoviedb.org/3/";
+    private static String ROOT = "http://api.themoviedb.org/";
     private static Api API;
 
 
