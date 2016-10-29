@@ -19,7 +19,7 @@ public class MoviesRemoteDataSource implements MoviesDataSource {
 
     private static MoviesRemoteDataSource INSTANCE;
 
-    private ArrayList<Movie> movies;
+    private ArrayList<Movie> movies = new ArrayList<>();
 
     public static MoviesRemoteDataSource getInstance() {
         if (INSTANCE == null)

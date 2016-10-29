@@ -11,6 +11,7 @@ import com.vezikon.popularmovies.data.source.local.MoviesContract;
 import com.vezikon.popularmovies.data.source.local.MoviesLocalDataSource;
 import com.vezikon.popularmovies.data.source.remote.MoviesRemoteDataSource;
 import com.vezikon.popularmovies.moviedetails.MovieDetailFragment;
+import com.vezikon.popularmovies.moviedetails.MoviePresenter;
 import com.vezikon.popularmovies.movies.MoviesFragment;
 import com.vezikon.popularmovies.data.Movie;
 import com.vezikon.popularmovies.movies.MoviesPresenter;
@@ -23,6 +24,7 @@ import static com.vezikon.popularmovies.movies.MoviesFragment.*;
 public class MainActivity extends AppCompatActivity implements OnMoviesFragmentListener {
 
     MoviesPresenter moviesPresenter;
+    MoviePresenter moviePresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements OnMoviesFragmentL
 
         if (movieFragment == null) {
             movieFragment = MoviesFragment.newInstance();
-            ActivityUtil.addFragmentToActivity(getSupportFragmentManager(), movieFragment, R.id.fragment);
+            ActivityUtil.addFirstFragmentToActivity(getSupportFragmentManager(), movieFragment, R.id.fragment);
         }
 
         LoaderProvider loaderProvider = new LoaderProvider(this);
@@ -51,22 +53,41 @@ public class MainActivity extends AppCompatActivity implements OnMoviesFragmentL
     @Override
     public void onMovieSelected(Movie movie) {
 
-        Fragment movieDetailFragment = MovieDetailFragment.newInstance(movie, isFav(movie));
-
         //check screen status
-        if (getResources().getBoolean(R.bool.isMultiPane)
-                ) {
-
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_details, movieDetailFragment)
-                    .addToBackStack(null)
-                    .commit();
+        if (getResources().getBoolean(R.bool.isMultiPane)) {
+            addMultiPaneMovieDetailFragment(movie);
         } else {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment, movieDetailFragment)
-                    .addToBackStack(null)
-                    .commit();
+            addStandaloneMovieDetailFragment(movie);
         }
+    }
+
+    private void addMultiPaneMovieDetailFragment(Movie movie) {
+        MovieDetailFragment movieDetailFragment =
+                MovieDetailFragment.newInstance(movie, isFav(movie));
+        ActivityUtil
+                .addFragmentToActivity(getSupportFragmentManager(), movieDetailFragment, R.id.fragment_details);
+
+        moviePresenter = new MoviePresenter(MoviesRepository.getInstance(MoviesLocalDataSource.getInstance(getContentResolver()),
+                MoviesRemoteDataSource.getInstance()),
+                SchedulerProvider.getInstance(),
+                movie,
+                movieDetailFragment
+        );
+
+    }
+
+    private void addStandaloneMovieDetailFragment(Movie movie) {
+        MovieDetailFragment movieDetailFragment =
+                MovieDetailFragment.newInstance(movie, isFav(movie));
+        ActivityUtil
+                .addFragmentToActivity(getSupportFragmentManager(), movieDetailFragment, R.id.fragment);
+
+        moviePresenter = new MoviePresenter(MoviesRepository.getInstance(MoviesLocalDataSource.getInstance(getContentResolver()),
+                MoviesRemoteDataSource.getInstance()),
+                SchedulerProvider.getInstance(),
+                movie,
+                movieDetailFragment
+        );
     }
 
     /**

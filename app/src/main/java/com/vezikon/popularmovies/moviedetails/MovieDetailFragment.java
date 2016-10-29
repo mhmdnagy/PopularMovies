@@ -1,7 +1,6 @@
 package com.vezikon.popularmovies.moviedetails;
 
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,11 +22,7 @@ import com.vezikon.popularmovies.R;
 import com.vezikon.popularmovies.utils.Utils;
 import com.vezikon.popularmovies.data.Movie;
 import com.vezikon.popularmovies.data.Review;
-import com.vezikon.popularmovies.data.Reviews;
 import com.vezikon.popularmovies.data.Trailer;
-import com.vezikon.popularmovies.data.Trailers;
-import com.vezikon.popularmovies.movies.MoviesFragment;
-import com.vezikon.popularmovies.network.RestClient;
 
 import java.util.ArrayList;
 
@@ -36,14 +31,13 @@ import butterknife.InjectView;
 
 
 import static android.widget.LinearLayout.*;
-import static com.vezikon.popularmovies.data.source.local.MoviesContract.*;
 
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link MovieDetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MovieDetailFragment extends Fragment {
+public class MovieDetailFragment extends Fragment implements MovieContract.View {
 
     private static final String ARG_MOVIE = "movie";
     private static final String ARG_IS_FAV = "is.fav";
@@ -63,7 +57,6 @@ public class MovieDetailFragment extends Fragment {
     @InjectView(R.id.container)
     LinearLayout container;
 
-    private Movie movie;
     private boolean isFav;
 
     private static final String KEY_MOVIE = "movie";
@@ -72,7 +65,7 @@ public class MovieDetailFragment extends Fragment {
     private final String TAG = this.getClass().getName();
     private final String YOUTUBE = "http://img.youtube.com/vi/";
 
-    private ArrayList<Trailer> trailersList = new ArrayList<>();
+    private MovieContract.Presenter presenter;
 
     /**
      * Use this factory method to create a new instance of
@@ -101,7 +94,6 @@ public class MovieDetailFragment extends Fragment {
         setHasOptionsMenu(true);
 
         if (getArguments() != null) {
-            movie = getArguments().getParcelable(ARG_MOVIE);
             isFav = getArguments().getBoolean(ARG_IS_FAV);
 
             //no need to continue the method, we already got some data
@@ -109,7 +101,6 @@ public class MovieDetailFragment extends Fragment {
         }
 
         if (savedInstanceState != null) {
-            movie = savedInstanceState.getParcelable(KEY_MOVIE);
             isFav = savedInstanceState.getBoolean(KEY_IS_FAV);
 
         }
@@ -120,7 +111,6 @@ public class MovieDetailFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable(KEY_MOVIE, movie);
         outState.putBoolean(KEY_IS_FAV, isFav);
     }
 
@@ -137,73 +127,18 @@ public class MovieDetailFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        //setting data
-        title.setText(movie.getTitle());
-        plot.setText(movie.getOverview());
-        year.setText(movie.getRelease_date());
-        rate.setText(movie.getVote_average() + "/10");
-
-        String path = "http://image.tmdb.org/t/p/w185";
-
-        if (movie.getPoster_path() != null)
-            Picasso.with(getActivity()).load(path + movie.getPoster_path())
-                    .placeholder(R.drawable.placeholder)
-                    .into(img);
-
-
-        if (Utils.isNetworkAvailable(getActivity())) {
-            //getting trailers
-            getTrailers(movie.getId());
-        } else {
-            Toast.makeText(getActivity(), getString(R.string.error_msg_no_connection), Toast.LENGTH_LONG).show();
-        }
-
     }
 
-    private void getTrailers(final int movieId) {
-//        RestClient.get().trailers(movieId + "", MoviesFragment.API_KEY, new Callback<Trailers>() {
-//            @Override
-//            public void success(Trailers response, Response response2) {
-//                if (response.getYoutube().size() > 0) {
-//
-//                    trailersList = response.getYoutube();
-//
-//                    //add section title
-//                    addTitle(getString(R.string.movie));
-//                    //add content
-//                    addTrailers(response.getYoutube());
-//                }
-//
-//                //getting reviews
-//                getReviews(movie.getId());
-//            }
-//
-//            @Override
-//            public void failure(RetrofitError error) {
-//                Log.e(TAG, error.toString());
-//
-//                //getting reviews
-//                getReviews(movie.getId());
-//            }
-//        });
+    @Override
+    public void onResume() {
+        super.onResume();
+        presenter.subscribe();
     }
 
-
-    private void getReviews(int movieId) {
-//        RestClient.get().reviews(movieId + "", MoviesFragment.API_KEY, new Callback<Reviews>() {
-//            @Override
-//            public void success(Reviews reviews, Response response) {
-//                if (reviews.getResults().size() > 0) {
-//                    addTitle(getString(R.string.reviews));
-//                    addReview(reviews.getResults());
-//                }
-//            }
-//
-//            @Override
-//            public void failure(RetrofitError error) {
-//                Log.e(TAG, error.toString());
-//            }
-//        });
+    @Override
+    public void onPause() {
+        super.onPause();
+        presenter.unsubscribe();
     }
 
     /**
@@ -297,7 +232,6 @@ public class MovieDetailFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-
         // Inflate the menu; this adds items to the action bar if it is present.
         getActivity().getMenuInflater().inflate(R.menu.fragment_movie_details_menu, menu);
 
@@ -322,54 +256,58 @@ public class MovieDetailFragment extends Fragment {
                 item.setIcon(item.isChecked() ? R.drawable.ic_favorite_white_18dp : R.drawable.ic_favorite_outline_white_18dp);
 
                 if (item.isChecked()) {
-                    addToFav(movie);
+                    presenter.addToFav();
                 } else {
-                    Log.d("removing", "called");
-                    removeFromFav(movie);
+                    presenter.removeFromFav();
                 }
                 break;
-            case R.id.share:
-
-                if (trailersList.size() > 0) {
-                    Intent sendIntent = new Intent();
-                    sendIntent.setAction(Intent.ACTION_SEND);
-                    sendIntent.putExtra(Intent.EXTRA_TEXT,
-                            "https://www.youtube.com/watch?v=" + trailersList.get(0).getSource());
-                    sendIntent.setType("text/plain");
-                    startActivity(sendIntent);
-                } else {
-                    Toast.makeText(getActivity(), "No trailers to share", Toast.LENGTH_SHORT).show();
-                }
-
-                break;
-
-
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-
-    private void addToFav(Movie movie) {
-
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(FavMoviesEntry._ID, movie.getId());
-        contentValues.put(FavMoviesEntry.COLUMN_TITLE, movie.getTitle());
-        contentValues.put(FavMoviesEntry.COLUMN_COUNT, movie.getVote_count());
-        contentValues.put(FavMoviesEntry.COLUMN_OVERVIEW, movie.getOverview());
-        contentValues.put(FavMoviesEntry.COLUMN_POSTER_PATH, movie.getPoster_path());
-        contentValues.put(FavMoviesEntry.COLUMN_RELEASE_DATE, movie.getRelease_date());
-        contentValues.put(FavMoviesEntry.COLUMN_VOTE_AVERAGE, movie.getVote_average());
-
-        getActivity().getContentResolver().insert(FavMoviesEntry.CONTENT_URI, contentValues);
-
+    @Override
+    public void showTrailers(ArrayList<Trailer> trailers) {
+        //add section title
+        addTitle(getString(R.string.movie));
+        //add content
+        addTrailers(trailers);
     }
 
-    private void removeFromFav(Movie movie) {
+    @Override
+    public void showReviews(ArrayList<Review> reviews) {
+        addTitle(getString(R.string.reviews));
+        addReview(reviews);
+    }
 
-        String selection = FavMoviesEntry._ID + " = ? ";
-        String[] selectionArgs = {movie.getId() + ""};
+    @Override
+    public void showMovieDetail(Movie movie) {
 
-        getActivity().getContentResolver().delete(FavMoviesEntry.CONTENT_URI, selection, selectionArgs);
+        //setting data
+        title.setText(movie.getTitle());
+        plot.setText(movie.getOverview());
+        year.setText(movie.getRelease_date());
+        rate.setText(movie.getVote_average() + "/10");
+
+        String path = "http://image.tmdb.org/t/p/w185";
+
+        if (movie.getPoster_path() != null)
+            Picasso.with(getActivity()).load(path + movie.getPoster_path())
+                    .placeholder(R.drawable.placeholder)
+                    .into(img);
+
+
+        if (Utils.isNetworkAvailable(getActivity())) {
+            //getting trailers
+            presenter.getTrailers(movie.getId());
+            presenter.getReviews(movie.getId());
+        } else {
+            Toast.makeText(getActivity(), getString(R.string.error_msg_no_connection), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void setPresenter(MovieContract.Presenter presenter) {
+        this.presenter = presenter;
     }
 }
