@@ -123,13 +123,13 @@ public class MovieDetailFragment extends Fragment implements MovieContract.View 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        presenter.subscribe();
 
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        presenter.subscribe();
     }
 
     @Override
