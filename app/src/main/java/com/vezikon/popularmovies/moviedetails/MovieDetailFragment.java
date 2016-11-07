@@ -230,6 +230,7 @@ public class MovieDetailFragment extends Fragment implements MovieContract.View 
         super.onCreateOptionsMenu(menu, inflater);
 
         // Inflate the menu; this adds items to the action bar if it is present.
+        menu.clear();
         getActivity().getMenuInflater().inflate(R.menu.fragment_movie_details_menu, menu);
 
         MenuItem item = menu.findItem(R.id.action_fav);

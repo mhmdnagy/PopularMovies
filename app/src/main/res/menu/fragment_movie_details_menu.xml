@@ -3,6 +3,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_most_popular"
+        android:orderInCategory="100"
+        android:title="@string/action_most_popular"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_highest_rate"
+        android:orderInCategory="200"
+        android:title="@string/action_highest_rate"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_fav_movies"
+        android:orderInCategory="300"
+        android:title="@string/action_favorite_movies"
+        app:showAsAction="never"
+        />
+
+    <item
         android:id="@+id/action_fav"
         android:checkable="true"
         android:icon="@drawable/ic_favorite_outline_white_18dp"
